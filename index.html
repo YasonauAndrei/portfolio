@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playable Ads Portfolio | Lead Developer</title>
+  <style>
+    :root {
+      --bg-color: #0d0e12;
+      --card-bg: #16181e;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #272a36;
+      --phone-width: 320px;
+      --phone-height: 640px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Header */
+    header {
+      padding: 1.5rem 4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(13, 14, 18, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand { display: flex; flex-direction: column; }
+    .logo { font-size: 1.4rem; font-weight: 800; tracking: -0.04em; background: linear-gradient(to right, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+    /* Filter Bar */
+    .filter-bar {
+      padding: 2rem 4rem 1rem 4rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Portfolio Grid */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 1rem 4rem 4rem 4rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+    }
+
+    .card-preview {
+      height: 220px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-preview iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none; /* Отключаем тачи в превью карточки */
+    }
+
+    .card-info {
+      padding: 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.4rem; }
+    .card-client { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .tag { background: rgba(255, 255, 255, 0.06); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: #d1d5db; }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      transition: background 0.2s ease;
+      font-size: 0.9rem;
+    }
+    .btn:hover { background: var(--accent-hover); }
+
+    /* Modal Device Viewer */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      flex-direction: column;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-controls {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .modal-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .modal-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .modal-btn.close-btn { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+    .modal-btn.close-btn:hover { background: rgba(239, 68, 68, 0.4); }
+
+    /* Phone Device Frame */
+    .phone-frame {
+      width: var(--phone-width);
+      height: var(--phone-height);
+      background: #111;
+      border: 12px solid #2d2d30;
+      border-radius: 40px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .phone-frame.landscape {
+      width: var(--phone-height);
+      height: var(--phone-width);
+    }
+    .phone-frame iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo">PLAYABLE ADS // PORTFOLIO</div>
+      <div class="subtitle">Lead Playable Ads Developer</div>
+    </div>
+  </header>
+
+  <!-- Filter Controls -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterProjects('all', this)">Все проекты</button>
+    <button class="filter-btn" onclick="filterProjects('Shooter', this)">Shooter</button>
+    <button class="filter-btn" onclick="filterProjects('Survival', this)">Survival</button>
+    <button class="filter-btn" onclick="filterProjects('Action', this)">Action</button>
+    <button class="filter-btn" onclick="filterProjects('Casual', this)">Casual</button>
+  </div>
+
+  <!-- Showcase Cards Grid -->
+  <div class="portfolio-grid" id="portfolioGrid"></div>
+
+  <!-- Interactive Mobile Player Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal-controls">
+      <button class="modal-btn" onclick="toggleOrientation()">Rotate Device</button>
+      <button class="modal-btn" onclick="reloadIframe()">Reload</button>
+      <button class="modal-btn close-btn" onclick="closeModal()">Close</button>
+    </div>
+    <div class="phone-frame" id="phoneFrame">
+      <iframe id="modalIframe"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // КОНФИГУРАЦИЯ ТВОИХ ПЛЕЙБЛОВ
+    // Просто добавляй или редактируй элементы массива
+    // =========================================================================
+    const projects = [
+  {
+    "id": "zm_1",
+    "title": "Zombie Match 1",
+    "client": "Royal Ark",
+    "category": "Casual",
+    "file": "playables/ZM_1.html",
+    "tags": ["Puzzle", "Match-3", "Interactive UI"]
+  },
+  {
+    "id": "zm",
+    "title": "Zombie Match",
+    "client": "Royal Ark",
+    "category": "Casual",
+    "file": "playables/ZM.html",
+    "tags": ["Puzzle", "Match-3", "Interactive UI"]
+  },
+  {
+    "id": "wwh_32",
+    "title": "World War Heroes",
+    "client": "Azure",
+    "category": "Shooter",
+    "file": "playables/WWH_32.html",
+    "tags": ["3D", "FPS", "Action"]
+  },
+  {
+    "id": "wwh_24",
+    "title": "World War Heroes",
+    "client": "Azure",
+    "category": "Shooter",
+    "file": "playables/WWH_24.html",
+    "tags": ["3D", "FPS", "Action"]
+  },
+  {
+    "id": "wm2",
+    "title": "Warships Mobile 2",
+    "client": "Azure",
+    "category": "Action",
+    "file": "playables/WM2.html",
+    "tags": ["3D", "Monsters", "RPG"]
+  },
+  {
+    "id": "vizor_2",
+    "title": "Vizor Project 2",
+    "client": "Vizor",
+    "category": "Casual",
+    "file": "playables/Vizor_2.html",
+    "tags": ["Casual", "Interactive", "Farm"]
+  },
+  {
+    "id": "vizor",
+    "title": "Vizor Project",
+    "client": "Vizor",
+    "category": "Casual",
+    "file": "playables/Vizor.html",
+    "tags": ["Casual", "Interactive", "Farm"]
+  },
+  {
+    "id": "sponge_art",
+    "title": "Sponge Art",
+    "client": "Azure",
+    "category": "Casual",
+    "file": "playables/SpongeArt.html",
+    "tags": ["Puzzle", "Physics", "3D"]
+  },
+  {
+    "id": "so2",
+    "title": "Standoff 2",
+    "client": "Axlebolt",
+    "category": "Shooter",
+    "file": "playables/SO2.html",
+    "tags": ["3D", "FPS", "Action"]
+  },
+  {
+    "id": "pock",
+    "title": "POCK",
+    "client": "Azure",
+    "category": "Interactive",
+    "file": "playables/POCK.html",
+    "tags": ["Interactive", "Arcade"]
+  },
+  {
+    "id": "orangeshake",
+    "title": "Playkot",
+    "client": "Custom Client",
+    "category": "Casual",
+    "file": "playables/Orangeshake.html",
+    "tags": ["Casual", "Interactive"]
+  },
+  {
+    "id": "mso",
+    "title": "MSO",
+    "client": "Azure",
+    "category": "Action",
+    "file": "playables/MSO.html",
+    "tags": ["Action", "Interactive"]
+  },
+  {
+    "id": "ldoe",
+    "title": "Last Day on Earth",
+    "client": "Kefir",
+    "category": "Survival",
+    "file": "playables/LDOE.html",
+    "tags": ["Survival", "Crafting", "Isometric"]
+  },
+  {
+    "id": "kc_78",
+    "title": "KC 78",
+    "client": "Azure",
+    "category": "Casual",
+    "file": "playables/KC_78.html",
+    "tags": ["Interactive", "Casual"]
+  },
+  {
+    "id": "kc_68",
+    "title": "KC 68",
+    "client": "Azure",
+    "category": "Casual",
+    "file": "playables/KC_68.html",
+    "tags": ["Interactive", "Casual"]
+  },
+  {
+    "id": "kc_50",
+    "title": "KC 50",
+    "client": "Azure",
+    "category": "Casual",
+    "file": "playables/KC_50.html",
+    "tags": ["Interactive", "Casual"]
+  },
+  {
+    "id": "ito_33",
+    "title": "ITO 33",
+    "client": "Azure",
+    "category": "Casual",
+    "file": "playables/ITO_33.html",
+    "tags": ["Interactive", "Puzzle"]
+  },
+  {
+    "id": "fura",
+    "title": "FURA",
+    "client": "Azure",
+    "category": "Action",
+    "file": "playables/FURA.html",
+    "tags": ["Vehicle", "Simulation"]
+  },
+  {
+    "id": "dye",
+    "title": "Dye Hard",
+    "client": "Azure",
+    "category": "Action",
+    "file": "playables/DYE.html",
+    "tags": ["RPG", "3D", "Action"]
+  }
+];
+
+    // Рендер карточек
+    function renderGrid(data) {
+      const grid = document.getElementById('portfolioGrid');
+      grid.innerHTML = '';
+
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-preview">
+            <iframe src="${item.file}"></iframe>
+          </div>
+          <div class="card-info">
+            <div>
+              <div class="card-client">${item.client}</div>
+              <div class="card-title">${item.title}</div>
+              <div class="card-meta">
+                ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+              </div>
+            </div>
+            <button class="btn" onclick="openModal('${item.file}')">Test Playable</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Фильтрация
+    function filterProjects(category, btnElement) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      if (category === 'all') {
+        renderGrid(projects);
+      } else {
+        const filtered = projects.filter(p => p.category === category);
+        renderGrid(filtered);
+      }
+    }
+
+    // Управление Модальным проигрывателем
+    function openModal(filePath) {
+      const modal = document.getElementById('modal');
+      const iframe = document.getElementById('modalIframe');
+      iframe.src = filePath;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      const iframe = document.getElementById('modalIframe');
+      iframe.src = '';
+      modal.classList.remove('active');
+    }
+
+    function toggleOrientation() {
+      const frame = document.getElementById('phoneFrame');
+      frame.classList.toggle('landscape');
+    }
+
+    function reloadIframe() {
+      const iframe = document.getElementById('modalIframe');
+      iframe.src = iframe.src;
+    }
+
+    // Старт
+    renderGrid(projects);
+  </script>
+</body>
+</html>
