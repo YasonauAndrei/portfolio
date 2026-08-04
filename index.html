@@ -35,7 +35,7 @@
     }
 
     .brand { display: flex; flex-direction: column; }
-    .logo { font-size: 1.4rem; font-weight: 800; tracking: -0.04em; background: linear-gradient(to right, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.04em; background: linear-gradient(to right, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
 
     /* Filter Bar */
@@ -88,17 +88,43 @@
 
     .card-preview {
       height: 220px;
-      background: #000;
+      background:
+        radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.32), transparent 34%),
+        linear-gradient(135deg, #11131a 0%, #08090d 100%);
       position: relative;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
     }
-    .card-preview iframe {
+    .preview-content {
       width: 100%;
       height: 100%;
-      border: none;
-      pointer-events: none; /* Отключаем тачи в превью карточки */
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
     }
-
+    .preview-title {
+      max-width: 100%;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .preview-category {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
     .card-info {
       padding: 1.25rem;
       flex-grow: 1;
@@ -179,7 +205,7 @@
       width: var(--phone-height);
       height: var(--phone-width);
     }
-    .phone-frame iframe { width: 100%; height: 100%; border: none; }
+    .phone-frame iframe { width: 100%; height: 100%; border: none; background: #000; }
   </style>
 </head>
 <body>
@@ -193,11 +219,12 @@
 
   <!-- Filter Controls -->
   <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" onclick="filterProjects('all', this)">Все проекты</button>
+    <button class="filter-btn active" onclick="filterProjects('all', this)">All Projects</button>
     <button class="filter-btn" onclick="filterProjects('Shooter', this)">Shooter</button>
     <button class="filter-btn" onclick="filterProjects('Survival', this)">Survival</button>
     <button class="filter-btn" onclick="filterProjects('Action', this)">Action</button>
     <button class="filter-btn" onclick="filterProjects('Casual', this)">Casual</button>
+    <button class="filter-btn" onclick="filterProjects('Interactive', this)">Interactive</button>
   </div>
 
   <!-- Showcase Cards Grid -->
@@ -217,8 +244,8 @@
 
   <script>
     // =========================================================================
-    // КОНФИГУРАЦИЯ ТВОИХ ПЛЕЙБЛОВ
-    // Просто добавляй или редактируй элементы массива
+    // Playables configuration
+    // Edit the project list below
     // =========================================================================
     const projects = [
   {
@@ -375,7 +402,7 @@
   }
 ];
 
-    // Рендер карточек
+    // Render cards
     function renderGrid(data) {
       const grid = document.getElementById('portfolioGrid');
       grid.innerHTML = '';
@@ -385,7 +412,10 @@
         card.className = 'card';
         card.innerHTML = `
           <div class="card-preview">
-            <iframe src="${item.file}"></iframe>
+            <div class="preview-content">
+              <div class="preview-title">${item.title}</div>
+              <div class="preview-category">${item.category}</div>
+            </div>
           </div>
           <div class="card-info">
             <div>
@@ -402,7 +432,7 @@
       });
     }
 
-    // Фильтрация
+    // Filtering
     function filterProjects(category, btnElement) {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btnElement.classList.add('active');
@@ -415,18 +445,24 @@
       }
     }
 
-    // Управление Модальным проигрывателем
+    // Modal player controls
     function openModal(filePath) {
       const modal = document.getElementById('modal');
       const iframe = document.getElementById('modalIframe');
-      iframe.src = filePath;
       modal.classList.add('active');
+      if (iframe.dataset.src === filePath && iframe.src) return;
+      iframe.src = '';
+      iframe.dataset.src = filePath;
+      requestAnimationFrame(() => {
+        iframe.src = filePath;
+      });
     }
 
     function closeModal() {
       const modal = document.getElementById('modal');
       const iframe = document.getElementById('modalIframe');
       iframe.src = '';
+      iframe.dataset.src = '';
       modal.classList.remove('active');
     }
 
@@ -437,10 +473,15 @@
 
     function reloadIframe() {
       const iframe = document.getElementById('modalIframe');
-      iframe.src = iframe.src;
+      const filePath = iframe.dataset.src || iframe.getAttribute('src');
+      if (!filePath) return;
+      iframe.src = '';
+      requestAnimationFrame(() => {
+        iframe.src = filePath;
+      });
     }
 
-    // Старт
+    // Start
     renderGrid(projects);
   </script>
 </body>
