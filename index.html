@@ -96,11 +96,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.25rem;
+      padding: 0;
     }
-    .preview-content {
+    .preview-image {
       width: 100%;
       height: 100%;
+      display: block;
+      object-fit: contain;
+      object-position: center center;
+      background: #000;
+    }
+    .preview-content {
+      position: absolute;
+      inset: 1.25rem;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       display: flex;
@@ -412,7 +420,8 @@
         card.className = 'card';
         card.innerHTML = `
           <div class="card-preview">
-            <div class="preview-content">
+            <img class="preview-image" src="previews/${item.id}.png" alt="${item.title} preview" loading="lazy" onerror="this.remove(); this.nextElementSibling.hidden = false;">
+            <div class="preview-content" hidden>
               <div class="preview-title">${item.title}</div>
               <div class="preview-category">${item.category}</div>
             </div>
